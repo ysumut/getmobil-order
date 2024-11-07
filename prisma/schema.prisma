@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  totalAmount Float     @map("total_amount")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  orderItems OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  orderId   Int       @map("order_id") @db.UnsignedInt
+  vendorId  Int       @map("vendor_id") @db.UnsignedInt
+  productId Int       @map("product_id") @db.UnsignedInt
+  quantity  Int       @map("quantity") @db.UnsignedInt
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  vendor  Vendor  @relation(fields: [vendorId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Product {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  name      String    @map("name")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  productVendors ProductVendor[]
+  orderItems     OrderItem[]
+
+  @@map("products")
+}
+
+model ProductVendor {
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
+  productId    Int       @map("product_id") @db.UnsignedInt
+  vendorId     Int       @map("vendor_id") @db.UnsignedInt
+  quantity     Int       @map("quantity") @db.UnsignedInt
+  price        Float     @map("price")
+  taxRate      Float     @map("tax_rate")
+  discountRate Float     @map("discount_rate")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  product Product @relation(fields: [productId], references: [id])
+  vendor  Vendor  @relation(fields: [vendorId], references: [id])
+
+  @@map("product_vendors")
+}
+
+model Vendor {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  name      String    @map("name")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  productVendors ProductVendor[]
+  orderItems     OrderItem[]
+
+  @@map("vendors")
+}
