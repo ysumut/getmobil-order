@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [HttpModule],
+  controllers: [],
   providers: [PrismaService],
   exports: [PrismaService],
 })

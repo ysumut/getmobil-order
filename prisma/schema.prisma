@@ -7,13 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  fullName  String    @map("full_name")
+  email     String    @unique @map("email")
+  password  String    @map("password")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  orders Order[]
+
+  @@map("users")
+}
+
 model Order {
   id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  userId      Int       @map("user_id") @db.UnsignedInt
   totalAmount Float     @map("total_amount")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
+  user       User        @relation(fields: [userId], references: [id])
   orderItems OrderItem[]
 
   @@map("orders")

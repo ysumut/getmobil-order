@@ -6,6 +6,10 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { OrderModule } from './order/order.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { ErrorValidationPipe } from './common/pipes/error-validation.pipe';
+import { ProductModule } from './product/product.module';
+import { AuthGuard } from './common/guards/auth.guard';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -23,13 +27,20 @@ import { ErrorValidationPipe } from './common/pipes/error-validation.pipe';
         ];
       },
     }),
+    JwtModule.register({ global: true }),
+    AuthModule,
     CommonModule,
     OrderModule,
+    ProductModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
     {
       provide: APP_PIPE,

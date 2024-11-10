@@ -4,6 +4,8 @@ import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 
+export const mainDirectory = __dirname + '/..';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
