@@ -10,6 +10,7 @@ import { ProductModule } from './product/product.module';
 import { AuthGuard } from './common/guards/auth.guard';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -49,6 +50,10 @@ import { JwtModule } from '@nestjs/jwt';
     {
       provide: APP_FILTER,
       useClass: PrismaExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
     },
   ],
 })

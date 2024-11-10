@@ -1,5 +1,10 @@
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { GeneralResponseDto } from '../common/dtos/general-response.dto';
 import { GetOrderDetailDto } from './dtos/get-order-detail.dto';
@@ -37,13 +42,21 @@ export class OrderController {
 
   @Post()
   @ApiBearerAuth()
+  @ApiBody({ type: CreateOrderDto, isArray: true })
   @ApiOkResponse({ type: GeneralResponseDto })
   async createOrder(
     @User() user: UserDto,
-    @Query() dtos: CreateOrderDto[],
+    @Body() dtos: CreateOrderDto[],
   ): Promise<GeneralResponseDto> {
-    await this.orderValidation.validateCreateOrder(user, dtos);
-    const order = await this.orderService.createOrder(user, dtos);
+    const productVendors = await this.orderValidation.validateCreateOrder(
+      user,
+      dtos,
+    );
+    const order = await this.orderService.createOrder(
+      user,
+      dtos,
+      productVendors,
+    );
     return new GeneralResponseDto().setData(order);
   }
 }

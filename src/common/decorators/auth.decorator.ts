@@ -10,6 +10,10 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 export const User = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): UserDto => {
     const request = ctx.switchToHttp().getRequest();
-    return request.user;
+    return {
+      id: request.user.id,
+      fullName: request.user.fullName,
+      email: request.user.email,
+    };
   },
 );

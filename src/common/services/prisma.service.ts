@@ -10,6 +10,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     this.$extends(
       createSoftDeleteExtension({
         models: {
+          User: true,
           Order: true,
           OrderItem: true,
           Product: true,

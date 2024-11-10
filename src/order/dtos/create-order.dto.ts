@@ -4,11 +4,11 @@ import { IsNumber, Min } from 'class-validator';
 export class CreateOrderDto {
   @ApiProperty({ type: Number })
   @IsNumber()
-  vendorId: number;
+  productId: number;
 
   @ApiProperty({ type: Number })
   @IsNumber()
-  productId: number;
+  vendorId: number;
 
   @ApiProperty({ type: Number })
   @IsNumber()

@@ -33,8 +33,16 @@ export class AuthGuard implements CanActivate {
     try {
       const request = ctx.switchToHttp().getRequest();
       const authorization = request.headers.authorization;
+      if (!authorization) {
+        throw new HttpException('unauthenticated', HttpStatus.UNAUTHORIZED);
+      }
+      const authorizationArr = authorization.split('Bearer ');
+      const accessToken =
+        authorizationArr.length == 1
+          ? String(authorizationArr[0])
+          : String(authorizationArr[1]);
       const payload: AccessTokenPayloadDto = this.jwtService.verify(
-        authorization,
+        accessToken,
         {
           publicKey: fsReadFile(mainDirectory + '/.oauth/public.key'),
         },
@@ -44,9 +52,8 @@ export class AuthGuard implements CanActivate {
       });
       request.user = user;
       return true;
-    } catch (error) {
-      throw error;
-      //throw new HttpException('Giriş yapınız', HttpStatus.UNAUTHORIZED);
+    } catch {
+      throw new HttpException('Giriş yapınız', HttpStatus.UNAUTHORIZED);
     }
   }
 }
