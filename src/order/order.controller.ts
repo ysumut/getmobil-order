@@ -52,11 +52,7 @@ export class OrderController {
       user,
       dtos,
     );
-    const order = await this.orderService.createOrder(
-      user,
-      dtos,
-      productVendors,
-    );
-    return new GeneralResponseDto().setData(order);
+    await this.orderService.createOrder(user, dtos, productVendors);
+    return new GeneralResponseDto();
   }
 }
