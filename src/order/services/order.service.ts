@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../common/services/prisma.service';
-import { GetOrderDetailDto } from './dtos/get-order-detail.dto';
-import { CreateOrderDto } from './dtos/create-order.dto';
-import { UserDto } from '../common/dtos/user.dto';
+import { PrismaService } from '../../common/services/prisma.service';
+import { GetOrderDetailDto } from '../dtos/get-order-detail.dto';
+import { CreateOrderDto } from '../dtos/create-order.dto';
+import { UserDto } from '../../common/dtos/user.dto';
 import { ProductVendor } from '@prisma/client';
-import { ProductService } from '../product/product.service';
+import { ProductService } from '../../product/product.service';
+import { OrderFetchService } from './order-fetch.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     private prismaService: PrismaService,
+    private orderFetchService: OrderFetchService,
     private productService: ProductService,
   ) {}
 
@@ -63,7 +65,7 @@ export class OrderService {
       totalAmount += realPrice * productVendor['decrement'];
     }
     await this.prismaService.$transaction(async (tx) => {
-      await tx.order.create({
+      const order = await tx.order.create({
         data: {
           userId: user.id,
           totalAmount: totalAmount,
@@ -79,6 +81,7 @@ export class OrderService {
             },
           },
         },
+        include: { orderItems: true },
       });
       for (const productVendor of productVendors) {
         await tx.productVendor.update({
@@ -86,6 +89,15 @@ export class OrderService {
           data: { quantity: { decrement: productVendor['decrement'] } },
         });
       }
+      await this.orderFetchService.createInvoice(
+        user,
+        {
+          orderId: order.id,
+          totalAmount: order.totalAmount,
+          payload: order,
+        },
+        user.accessToken,
+      );
     });
   }
 }

@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AccessTokenPayloadDto } from '../decorators/access-token-payload.dto';
 import { mainDirectory } from '../../main';
 import { fsReadFile } from 'ts-loader/dist/utils';
+import { UserDto } from '../dtos/user.dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthGuard implements CanActivate {
@@ -47,9 +48,15 @@ export class AuthGuard implements CanActivate {
           publicKey: fsReadFile(mainDirectory + '/.oauth/public.key'),
         },
       );
-      const user = await this.prismaService.user.findFirstOrThrow({
+      const profile = await this.prismaService.user.findFirstOrThrow({
         where: { id: payload.userId },
       });
+      const user: UserDto = {
+        id: profile.id,
+        fullName: profile.fullName,
+        email: profile.email,
+        accessToken: accessToken,
+      };
       request.user = user;
       return true;
     } catch {

@@ -14,6 +14,7 @@ export const User = createParamDecorator(
       id: request.user.id,
       fullName: request.user.fullName,
       email: request.user.email,
+      accessToken: request.user.accessToken,
     };
   },
 );

@@ -5,7 +5,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { OrderService } from './order.service';
+import { OrderService } from './services/order.service';
 import { GeneralResponseDto } from '../common/dtos/general-response.dto';
 import { GetOrderDetailDto } from './dtos/get-order-detail.dto';
 import { OrderValidation } from './order.validation';
