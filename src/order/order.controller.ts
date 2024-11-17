@@ -48,11 +48,8 @@ export class OrderController {
     @User() user: UserDto,
     @Body() dtos: CreateOrderDto[],
   ): Promise<GeneralResponseDto> {
-    const productVendors = await this.orderValidation.validateCreateOrder(
-      user,
-      dtos,
-    );
-    await this.orderService.createOrder(user, dtos, productVendors);
+    await this.orderValidation.validateCreateOrder(user, dtos);
+    //await this.orderService.createOrder(user, dtos, productVendors);
     return new GeneralResponseDto();
   }
 }

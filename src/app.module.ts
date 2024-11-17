@@ -11,6 +11,7 @@ import { AuthGuard } from './common/guards/auth.guard';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { KafkaModule } from './kafka/kafka.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     JwtModule.register({ global: true }),
     AuthModule,
     CommonModule,
+    KafkaModule,
     OrderModule,
     ProductModule,
   ],

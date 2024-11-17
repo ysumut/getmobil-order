@@ -11,7 +11,7 @@ export class ProductValidation {
   constructor(private prismaService: PrismaService) {}
 
   async validateProducts(user: UserDto, dtos: CreateOrderDto[]) {
-    const productsVendors = await this.prismaService.productVendor.findMany({
+    const productVendors = await this.prismaService.productVendor.findMany({
       where: {
         OR: dtos.map((dto) => {
           return {
@@ -22,7 +22,7 @@ export class ProductValidation {
         }),
       },
     });
-    if (dtos.length !== productsVendors.length) {
+    if (dtos.length !== productVendors.length) {
       new ErrorLogDto(
         user.id,
         dtos,
@@ -31,6 +31,6 @@ export class ProductValidation {
       ).log(this.logger);
       throw new BadRequestException('Geçersiz işlem');
     }
-    return productsVendors;
+    return productVendors;
   }
 }

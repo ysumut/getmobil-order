@@ -1,19 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../common/services/prisma.service';
 import { GetOrderDetailDto } from '../dtos/get-order-detail.dto';
-import { CreateOrderDto } from '../dtos/create-order.dto';
 import { UserDto } from '../../common/dtos/user.dto';
-import { ProductVendor } from '@prisma/client';
 import { ProductService } from '../../product/product.service';
 import { OrderFetchService } from './order-fetch.service';
+import { CreateOrderKafkaDto } from '../dtos/create-order-kafka.dto';
+import { KafkaConsumerService } from '../../kafka/services/kafka-consumer.service';
 
 @Injectable()
-export class OrderService {
+export class OrderService implements OnModuleInit {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(
     private prismaService: PrismaService,
     private orderFetchService: OrderFetchService,
     private productService: ProductService,
+    private kafkaConsumerService: KafkaConsumerService,
   ) {}
+
+  async onModuleInit() {
+    await this.kafkaConsumerService.consume(
+      { topics: ['order.create'] },
+      {
+        eachMessage: async ({ topic, partition, message }) => {
+          const dto: CreateOrderKafkaDto = JSON.parse(message.value.toString());
+          await this.createOrder(dto);
+        },
+      },
+    );
+  }
 
   async getOrders(user: UserDto) {
     const orders = await this.prismaService.order.findMany({
@@ -45,19 +60,15 @@ export class OrderService {
     return order;
   }
 
-  async createOrder(
-    user: UserDto,
-    dtos: CreateOrderDto[],
-    productVendors: ProductVendor[],
-  ): Promise<void> {
+  async createOrder(dto: CreateOrderKafkaDto): Promise<void> {
     let totalAmount = 0;
-    for (const productVendor of productVendors) {
+    for (const productVendor of dto.productVendors) {
       const realPrice = this.productService.getRealPrice(
         productVendor.price,
         productVendor.taxRate,
         productVendor.discountRate,
       );
-      productVendor['decrement'] = dtos.find(
+      productVendor['decrement'] = dto.orderDtos.find(
         (dto) =>
           dto.productId == productVendor.productId &&
           dto.vendorId == productVendor.vendorId,
@@ -67,11 +78,11 @@ export class OrderService {
     await this.prismaService.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
-          userId: user.id,
+          userId: dto.user.id,
           totalAmount: totalAmount,
           orderItems: {
             createMany: {
-              data: dtos.map((dto) => {
+              data: dto.orderDtos.map((dto) => {
                 return {
                   productId: dto.productId,
                   vendorId: dto.vendorId,
@@ -83,20 +94,20 @@ export class OrderService {
         },
         include: { orderItems: true },
       });
-      for (const productVendor of productVendors) {
+      for (const productVendor of dto.productVendors) {
         await tx.productVendor.update({
           where: { id: productVendor.id },
           data: { quantity: { decrement: productVendor['decrement'] } },
         });
       }
       await this.orderFetchService.createInvoice(
-        user,
+        dto.user,
         {
           orderId: order.id,
           totalAmount: order.totalAmount,
           payload: order,
         },
-        user.accessToken,
+        dto.user.accessToken,
       );
     });
   }

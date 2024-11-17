@@ -6,9 +6,10 @@ import { OrderValidation } from './order.validation';
 import { ProductModule } from '../product/product.module';
 import { HttpModule } from '@nestjs/axios';
 import { OrderFetchService } from './services/order-fetch.service';
+import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
-  imports: [HttpModule, ProductModule, CommonModule],
+  imports: [HttpModule, KafkaModule, ProductModule, CommonModule],
   controllers: [OrderController],
   providers: [OrderService, OrderFetchService, OrderValidation],
   exports: [],
